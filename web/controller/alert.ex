@@ -6,9 +6,14 @@ defmodule IotIntern.Controller.Alert do
   # alias IotIntern.Error
   # alias IotIntern.Linkit
 
-  def post_alert(%{request: %{body: _body}} = conn) do
+  def post_alert(%{request: %{body: body}} = conn) do
     {:ok, datetime} = DateTime.now("Etc/UTC")
     datetime_iso8601 = DateTime.truncate(datetime, :second)
-    Conn.json(conn, 200, %{sent_at: datetime_iso8601})
+    case body do
+      %{ "type" => type } when type in ["jamming", "derailment", "dead_battery"] -> Conn.json(conn, 200, %{sent_at: datetime_iso8601})
+      _                                                                          -> Conn.json(conn, 400, %{"message" => "Unable to understand the request", "type" => "BadRequest"})
+    end
+
+
   end
 end
